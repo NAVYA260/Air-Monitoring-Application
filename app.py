@@ -28,6 +28,7 @@ class User( db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False)
     city = db.Column(db.String(120))
+    is_admin = db.Column(db.Boolean, default=False) 
 
 
 class Post(db.Model):
@@ -59,11 +60,20 @@ class Leaderboard(db.Model):
     date_recorded = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('leaderboard_entries', lazy=True))
 
-
-
 with app.app_context():
     db.create_all()
-
+    admin_user = User.query.filter_by(username="admin").first()
+    if not admin_user:
+        admin_user = User(
+            username="admin", 
+            email="admin@example.com", 
+            password="123", 
+            city="Andhra", 
+            is_admin=True 
+        )
+        db.session.add(admin_user)
+        db.session.commit()
+    
 
 openWeatherMapApiKey = '0cf7c26dfafe8347249c852c4a0610b1'
 aqiApikey = '0dd8f922-0e14-4f03-9ad4-3c7f7697602b'
@@ -84,7 +94,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -103,6 +112,7 @@ def login():
             user = User.query.filter_by(username=username).first()
             if user and user.password == password:
                 session['user_id'] = user.id
+                session['is_admin'] = user.is_admin
                 return redirect(url_for('home'))
             else:
                 error = "Invalid username or password."
@@ -146,24 +156,30 @@ def home():
         return redirect(url_for('login'))
     return render_template('home.html')
 
+
 @app.route('/community', methods=["GET", "POST"])
 def community():
     if request.method == "POST":
         title = request.form['title']
         content = request.form['content']
-        author_id = 1  # Replace with logic to get the actual user ID
-        new_post = Post(title=title, content=content, author_id=author_id)
+        user_id = session.get('user_id')
+        new_post = Post(title=title, content=content, author_id=user_id)
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for('community'))
-    posts = Post.query.all()
+    if 'is_admin' in session and session['is_admin']:
+        posts = Post.query.all() 
+    else:
+        posts = Post.query.all()
     return render_template('community.html', posts=posts)
+
 
 @app.route('/post/<int:post_id>', methods=["GET", "POST"])
 def post(post_id):
     post = Post.query.get_or_404(post_id)
-    user_id = 1  # Replace with the actual user ID
-
+    user_id = session.get('user_id') 
+    if not user_id:
+        return redirect(url_for('login'))
     if request.method == "POST":
         if 'like' in request.form:
             existing_like = Like.query.filter_by(post_id=post.id, user_id=user_id).first()
@@ -175,14 +191,42 @@ def post(post_id):
             db.session.commit()
         else:
             content = request.form['content']
-            new_comment = Comment(content=content, post_id=post_id, author_id=user_id) 
+            new_comment = Comment(content=content, post_id=post_id, author_id=user_id)
             db.session.add(new_comment)
             db.session.commit()
+    user_likes = Like.query.filter_by(post_id=post.id, user_id=user_id).all()
+    likes_count = len(user_likes) 
+    user_has_liked = len(user_likes) > 0 
+    all_likes_count = post.likes.count() 
 
-    likes_count = post.likes.count()  # Count all likes for the post
-    user_has_liked = Like.query.filter_by(post_id=post.id, user_id=user_id).first() is not None 
+    return render_template('post.html', post=post, likes_count=all_likes_count, 
+                           user_has_liked=user_has_liked)
 
-    return render_template('post.html', post=post, likes_count=likes_count, user_has_liked=user_has_liked)
+@app.route('/admin/delete_post/<int:post_id>')
+@app.route('/admin/delete_post/<int:post_id>')
+def delete_post(post_id):
+    post = Post.query.get(post_id)
+    if post:
+        likes = Like.query.filter_by(post_id=post.id).all()
+        for like in likes:
+            db.session.delete(like)
+        for comment in post.comments:
+            db.session.delete(comment)
+
+        db.session.delete(post)
+        db.session.commit()
+        return redirect(url_for('community'))
+    else:
+        return redirect(url_for('error_page'))
+
+@app.route('/admin/delete_comment/<int:comment_id>')
+def delete_comment(comment_id):
+    if 'is_admin' not in session or not session['is_admin']:
+        return redirect(url_for('home'))  
+    comment = Comment.query.get_or_404(comment_id)
+    db.session.delete(comment)
+    db.session.commit()
+    return redirect(url_for('post', post_id=comment.post_id))
 
 
 @app.route('/form', methods=['GET', 'POST'])
@@ -214,6 +258,7 @@ def form():
             'Frequency of Traveling by Air':{'very frequently':4,'frequently':3,'rarely':2,'never':1},
             'Waste Bag Size':{'small':1,'medium':2,'large':3,'extra large':4},
             'Energy efficiency':{'No':0,'Sometimes':1,'Yes':2},
+            'How Often Shower':{'daily':5,'more frequently':15,'less frequently':2,'twice a day':10}
         }
         for column,mapping in mappings.items():
             if column in df.columns:
@@ -258,8 +303,6 @@ def result():
     return render_template('result.html', emission=emission)
 
 
-
-
 @app.route('/leaderboard')
 def leaderboard():
     leaderboard_query = db.session.query(
@@ -278,7 +321,6 @@ def leaderboard():
                 "carbon_emission": round(avg_emission, 2),  
             })
     return render_template('leaderboard.html', leaderboard=leaderboard)
-
 
 
 @app.route('/visualize')
@@ -311,21 +353,16 @@ def api_weather():
     city = request.args.get('city', 'Bhimavaram')
     weather_url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={openWeatherMapApiKey}&units=metric"
     weather_response = requests.get(weather_url)
-    
     if weather_response.status_code != 200:
         return jsonify({'error': 'Could not fetch weather data'}), 500
-    
     weather_data = weather_response.json()
-
     try:
         aqi_url = f"https://api.waqi.info/feed/{city}/?token=132f67be1b7c0decb2f2135bafb77d0f692bec9a"
         aqi_response = requests.get(aqi_url)
         aqi_json = aqi_response.json()
-
         if aqi_json.get('status') == "ok":
             aqi_data = aqi_json.get('data', {})
             aqi = aqi_data.get('aqi', 'N/A')
-
             if aqi != 'N/A':
                 if aqi <= 50:
                     aqi_status = "Good"
@@ -344,15 +381,11 @@ def api_weather():
         else:
             print(f"Error: {aqi_json.get('data', 'Unknown error')}")
             aqi_status = "N/A"
-
     except Exception as e:
         aqi_status = "N/A"
         print(f"Error fetching AQI: {e}")
-
     weather_data['aqi_status'] = aqi_status
-
     return jsonify(weather_data)
-
 
 
 @app.route('/api/news')
@@ -360,11 +393,9 @@ def get_news():
     city = request.args.get('city')
     if not city:
         return jsonify({"error": "City is required"}), 400
-
     url = f"https://newsdata.io/api/1/latest?apikey=pub_606934e17c47151f23ec0bc338d60f08a5e31&q={city}"
     response = requests.get(url)
     news_data = response.json()
-
     if response.status_code == 200:
         return jsonify(news_data)
     else:
