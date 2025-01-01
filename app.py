@@ -21,6 +21,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login' 
 
+
 class User( db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -198,9 +199,9 @@ def post(post_id):
     likes_count = len(user_likes) 
     user_has_liked = len(user_likes) > 0 
     all_likes_count = post.likes.count() 
-
     return render_template('post.html', post=post, likes_count=all_likes_count, 
                            user_has_liked=user_has_liked)
+
 
 @app.route('/admin/delete_post/<int:post_id>')
 @app.route('/admin/delete_post/<int:post_id>')
@@ -218,6 +219,7 @@ def delete_post(post_id):
         return redirect(url_for('community'))
     else:
         return redirect(url_for('error_page'))
+
 
 @app.route('/admin/delete_comment/<int:comment_id>')
 def delete_comment(comment_id):

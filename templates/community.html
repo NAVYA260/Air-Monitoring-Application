@@ -197,6 +197,21 @@
                 font-size: 0.9rem;
             }
         }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 
@@ -233,7 +248,7 @@
                 <p class="card-text">{{ post.content }}</p>
                 <p class="post-author">{{post.author.username }}</p>
                 {% if 'is_admin' in session and session['is_admin'] %}
-                <a href="{{ url_for('delete_post', post_id=post.id) }}">Delete Post</a>
+                <a href="{{ url_for('delete_post', post_id=post.id) }}" class="btn btn-delete">Delete Post</a>
                 {% endif %}
                 <a href="{{ url_for('post', post_id=post.id) }}" class="btn-view">View Post</a>
             </div>

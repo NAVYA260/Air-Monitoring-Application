@@ -167,6 +167,23 @@
         .btn {
             margin-top: 10px;
         }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 
@@ -184,7 +201,7 @@
         <p>{{ post.content }}</p>
         <p>By {{ post.author.username }}</p>
         {% if 'is_admin' in session and session['is_admin'] %}
-            <a href="{{ url_for('delete_post', post_id=post.id) }}">Delete Post</a>
+        <a href="{{ url_for('delete_post', post_id=post.id) }}" class="btn btn-delete">Delete Post</a>
         {% endif %}
         <p><strong>Likes:</strong> {{ likes_count }}</p>
         <form method="POST">
@@ -214,7 +231,7 @@
                     <p class="card-text">{{ comment.content }}</p>
                     <footer class="blockquote-footer">{{ comment.author.username }}</footer>
                     {% if 'is_admin' in session and session['is_admin'] %}
-                    <a href="{{ url_for('delete_comment', comment_id=comment.id) }}">Delete Comment</a> 
+                    <a href="{{ url_for('delete_comment', comment_id=comment.id) }}" class="btn btn-delete">Delete Comment</a>
                     {% endif %}
                 </div>
             </div>
