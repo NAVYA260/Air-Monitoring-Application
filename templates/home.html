@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App with Charts</title>
+    <title>Enhanced Weather & News Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             display: flex;
@@ -16,19 +17,55 @@
             color: #fff;
             font-family: Arial, sans-serif;
         }
+        nav {
+            width: 100%;
+            background-color: #333;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 20px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        nav ul li a:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
 
         .container {
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 100%;
+            width: 90%;
             text-align: center;
-            max-width: 1200px;
-            margin: 20px 0;
+            max-width: 800px;
+            margin-top: 80px;
         }
 
-        h1 {
+        h1,
+        h2 {
             margin-bottom: 20px;
             font-size: 2.2rem;
             color: #333;
@@ -50,29 +87,23 @@
             max-width: 300px;
         }
 
-        button,
-        .buttons a {
+        button {
             padding: 10px 20px;
             background-color: #007bff;
             color: white;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
         }
 
-        button:hover,
-        .buttons a:hover {
+        button:hover {
             background-color: #0056b3;
         }
 
-
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
             margin-top: 20px;
             padding: 20px;
@@ -91,169 +122,303 @@
             color: #333;
         }
 
-        .grid-item h4 {
-            margin-bottom: 8px;
-        }
-
-        #chart-container,
-        #humidity-chart-container {
-            margin-top: 30px;
-            margin-left: 30px;
-            width: 100%;
-            max-width: 800px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            max-width: 100%;
-        }
-
-        #loader {
-            display: none;
-            margin: 20px 0;
-            font-size: 18px;
-            color: #007bff;
-        }
-
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        #newsContainer {
-            margin-top: 80px;
+        .news-container {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 20px;
-            justify-content: space-between;
+            text-align: left;
+            align-items: stretch;
+            max-height: 500px;
+            overflow-y: auto;
         }
 
         .news-item {
-            width: calc(50% - 10px);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            align-items: flex-start;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
             box-sizing: border-box;
         }
 
         .news-image {
-            width: 100%;
-            height: 50px;
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
             border-radius: 8px;
+            flex-shrink: 0;
         }
 
-        .news-item a {
-            display: block;
-            text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
-            text-decoration: none;
+        .news-content {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            word-wrap: break-word;
+            max-width: calc(100% - 120px);
+        }
+
+        .news-content h4 {
+            margin: 0 0 8px;
+            font-size: 16px;
+            text-overflow: ellipsis;
+            white-space: normal;
+            overflow: hidden;
+        }
+
+        .news-content p {
+            margin: 0;
+            font-style: italic;
             color: black;
+            white-space: normal;
+            overflow: hidden;
         }
 
-        .news-item a:hover {
-            text-decoration: underline;
+        canvas {
+            margin-top: 20px;
+            width: 100%;
         }
+
+        #loader {
+            color: blue;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+
+            .container {
+                margin-top: 100px;
+            }
+
+
+            .grid-container {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .inputs {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .grid-item {
+                padding: 15px;
+                font-size: 1rem;
+            }
+
+            .news-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .news-image {
+                width: 80px;
+                height: 80px;
+            }
+
+            .news-content h4 {
+                font-size: 14px;
+            }
+
+            .news-content p {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            h1,
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-item {
+                font-size: 0.9rem;
+            }
+
+            input,
+            button {
+                max-width: 100%;
+            }
+
+            .news-item {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
 
         .news-image {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin-bottom: 10px;
+            width: 80px;
+            height: 80px;
+        }
+
+        .news-content h4 {
+            font-size: 14px;
+
+            .news-content p {
+                font-size: 12px;
+
+            }
+        }
+        @media (max-width: 480px) {
+
+            h1,
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-item {
+                font-size: 0.9rem;
+            }
+
+            input,
+            button {
+                max-width: 100%;
+            }
         }
         .navbar {
             background-color: #2c3e50;
-            padding: 20px 20px;
-            width: 100%;
+            padding: 30px 20px;
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 10px;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
+
         .navbar-links {
             list-style-type: none;
-            margin: 0;
-            padding: 0;
             display: flex;
         }
+
         .navbar-links li {
             margin-left: 20px;
         }
 
         .navbar-links a {
-            color: white;
+            color: #ecf0f1;
             text-decoration: none;
             font-size: 1.1rem;
-            padding: 5px 10px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         .navbar-links a:hover {
-            color: #ff9900;
+            background-color: #34495e;
+            color: #f39c12;
+        }
+        @media (max-width: 768px) {
+            .navbar-links {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .navbar-links li {
+                margin-left: 0;
+                margin-bottom: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .form-control {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+
+            .btn-primary {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
-
 <body>
     <nav class="navbar">
         <ul class="navbar-links">
             <li><a href="/leaderboard">Leaderboard</a></li>
+            <li><a href="/form">Carbon Tracker</a></li>
             <li><a href="/community">Community</a></li>
             <li><a href="/logout">Logout</a></li>
         </ul>
     </nav>
     <div class="container">
-        <h1>Enhanced Weather App</h1>
+        <h1>Weather & Environment Dashboard</h1>
         <div class="inputs">
             <input type="text" id="cityInput" placeholder="Enter city name">
             <button id="getWeatherBtn">Get Weather</button>
-            <div class="buttons">
-                <a href="/form">Carbon Footprint</a>
-            </div>
         </div>
-        <div id="loader">Fetching weather data...</div>
-        <div class="grid-container">
-            <div id="temperature" class="grid-item">
+        <div id="loader" style="display:none;">Fetching data...</div>
+        <div class="grid-container" id="weatherContainer">
+
+            <div class="grid-item">
                 <h4>Temperature</h4>
-                <p id="tempValue">-</p>
+                <p id="temp">N/A</p>
             </div>
-            <div id="weather" class="grid-item">
-                <h4>Weather</h4>
-                <p id="weatherDesc">-</p>
+            <div class="grid-item">
+                <h4>Feels Like</h4>
+                <p id="feelsLike">N/A</p>
             </div>
-            <div id="humidity" class="grid-item">
+            <div class="grid-item">
                 <h4>Humidity</h4>
-                <p id="humidityValue">-</p>
+                <p id="humidity">N/A</p>
             </div>
-            <div id="wind" class="grid-item">
+            <div class="grid-item">
                 <h4>Wind Speed</h4>
-                <p id="windSpeed">-</p>
+                <p id="windSpeed">N/A</p>
             </div>
-            <div id="sunrise" class="grid-item">
-                <h4>Sunrise</h4>
-                <p id="sunriseTime">-</p>
-            </div>
-            <div id="sunset" class="grid-item">
-                <h4>Sunset</h4>
-                <p id="sunsetTime">-</p>
-            </div>
-            <div id="visibility" class="grid-item">
+            <div class="grid-item">
                 <h4>Visibility</h4>
-                <p id="visibilityValue">-</p>
+                <p id="visibility">N/A</p>
             </div>
-            <div id="aqi" class="grid-item">
-                <h4>Air Quality Index (AQI)</h4>
-                <p id="aqiValue">-</p>
+            <div class="grid-item">
+                <h4>Pressure</h4>
+                <p id="pressure">N/A</p>
             </div>
-        </div>
-        <h2 style="color: black;">Charts</h2>
-        <div id="chart-container">
-            <canvas id="temperatureChart"></canvas>
+            <div class="grid-item">
+                <h4>Sunrise</h4>
+                <p id="sunrise">N/A</p>
+            </div>
+            <div class="grid-item">
+                <h4>Sunset</h4>
+                <p id="sunset">N/A</p>
+            </div>
+            <div class="grid-item">
+                <h4>AQI</h4>
+                <p id="aqi">N/A</p>
+            </div>
         </div>
     </div>
+
     <div class="container">
-        <h2 style="color: black;">Latest News</h2>
-        <div id="newsContainer">
+        <h2>Latest News</h2>
+        <div class="news-container" id="newsContainer">
             <p>Enter a city and click "Get Weather" to view the latest news.</p>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <div class="container">
+        <h2>Weather Charts</h2>
+        <canvas id="tempChart"></canvas>
+        <canvas id="humidityChart"></canvas>
+    </div>
+
     <script>
         document.getElementById('getWeatherBtn').addEventListener('click', getWeather);
 
@@ -267,92 +432,96 @@
                     const weatherUrl = `/api/weather?city=${city}`;
                     const weatherResponse = await fetch(weatherUrl);
                     const weatherData = await weatherResponse.json();
-                    loader.style.display = 'none';
-
                     if (weatherResponse.ok) {
                         displayWeather(weatherData);
+                        generateChart(weatherData);
                         await fetchNews(city);
                     } else {
                         alert(weatherData.message || "Failed to fetch weather data.");
                     }
                 } catch (error) {
+                    alert("Error fetching weather data.");
+                } finally {
                     loader.style.display = 'none';
-                    alert("An error occurred while fetching the data. Please try again.");
                 }
             } else {
                 loader.style.display = 'none';
-                alert('Please enter a city name');
+                alert("Please enter a city name.");
             }
         }
 
         function displayWeather(data) {
-            document.getElementById('tempValue').textContent = `${data.main.temp} °C`;
-            document.getElementById('weatherDesc').textContent = data.weather[0].description;
-            document.getElementById('humidityValue').textContent = `${data.main.humidity}%`;
-            document.getElementById('windSpeed').textContent = `${data.wind.speed} m/s`;
-            const sunriseTime = new Date(data.sys.sunrise * 1000).toLocaleTimeString();
-            const sunsetTime = new Date(data.sys.sunset * 1000).toLocaleTimeString();
-            document.getElementById('sunriseTime').textContent = sunriseTime;
-            document.getElementById('sunsetTime').textContent = sunsetTime;
-            document.getElementById('visibilityValue').textContent = `${data.visibility / 1000} km`;
-            document.getElementById('aqiValue').textContent = data.aqi_status || 'Data not available';
+            const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString();
+            const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString();
+            const aqi = data.aqi_status || 'N/A';
 
-            const tempData = [data.main.temp, data.main.feels_like];
-            drawTemperatureChart(tempData);
+
+            document.getElementById('temp').innerText = data.main.temp + "°C";
+            document.getElementById('feelsLike').innerText = data.main.feels_like + "°C";
+            document.getElementById('humidity').innerText = data.main.humidity + "%";
+            document.getElementById('windSpeed').innerText = data.wind.speed + " m/s";
+            document.getElementById('visibility').innerText = data.visibility / 1000 + " km";
+            document.getElementById('pressure').innerText = data.main.pressure + " hPa";
+            document.getElementById('sunrise').innerText = sunrise;
+            document.getElementById('sunset').innerText = sunset;
+            document.getElementById('aqi').innerText = aqi;
         }
 
         async function fetchNews(city) {
+            const newsContainer = document.getElementById('newsContainer');
+            newsContainer.innerHTML = '';
+
             try {
                 const newsUrl = `/api/news?city=${city}`;
                 const newsResponse = await fetch(newsUrl);
                 const newsData = await newsResponse.json();
 
                 if (newsResponse.ok) {
-                    displayNews(newsData);
+                    if (newsData.results.length === 0) {
+                        newsContainer.innerHTML = '<p>No news found for this city.</p>';
+                    } else {
+                        newsData.results.forEach(item => {
+                            const imageUrl = item.image_url || 'https://via.placeholder.com/100x100?text=No+Image';
+
+                            const newsItem = document.createElement('div');
+                            newsItem.classList.add('news-item');
+                            newsItem.innerHTML = `
+                                <img src="${imageUrl}" alt="News Image" class="news-image">
+                                <div class="news-content">
+                                    <h4><a href="${item.link}" target="_blank">${item.title}</a></h4>
+                                    <p>${item.description || 'No description available.'}</p>
+                                </div>
+                            `;
+                            newsContainer.appendChild(newsItem);
+                        });
+                    }
                 } else {
                     alert(newsData.error || "Failed to fetch news.");
                 }
             } catch (error) {
-                alert("An error occurred while fetching the news. Please try again.");
-            }
-        }
-        function displayNews(newsData) {
-            const newsContainer = document.getElementById('newsContainer');
-            newsContainer.innerHTML = '';
-
-            if (newsData && newsData.results && newsData.results.length) {
-                newsData.results.forEach(item => {
-                    const newsItem = document.createElement('div');
-                    newsItem.classList.add('news-item');
-                    const imageUrl = item.image_url || item.source_icon || 'path/to/your/default/image.jpg';
-                    const newsImage = document.createElement('img');
-                    newsImage.src = imageUrl;
-                    newsImage.alt = item.title || 'News Image';
-                    newsImage.classList.add('news-image');
-                    newsItem.appendChild(newsImage);
-                    const newsLink = document.createElement('a');
-                    newsLink.href = item.link;
-                    newsLink.target = '_blank';
-                    newsLink.textContent = item.title || 'No Title Available';
-                    newsItem.appendChild(newsLink);
-                    newsContainer.appendChild(newsItem);
-                });
-            } else {
-                newsContainer.innerHTML = '<p>No news available for this city.</p>';
+                alert("Error fetching news.");
             }
         }
 
+        let tempChartInstance, humidityChartInstance;
 
-        function drawTemperatureChart(tempData) {
-            const ctx = document.getElementById('temperatureChart').getContext('2d');
-            new Chart(ctx, {
+        function generateChart(data) {
+            const tempCtx = document.getElementById('tempChart').getContext('2d');
+            const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+
+            if (tempChartInstance) tempChartInstance.destroy();
+            if (humidityChartInstance) humidityChartInstance.destroy();
+
+            tempChartInstance = new Chart(tempCtx, {
                 type: 'bar',
                 data: {
                     labels: ['Temperature', 'Feels Like'],
                     datasets: [{
-                        label: 'Temperature (°C)',
-                        data: tempData,
-                        backgroundColor: ['#FF5733', '#33B5E5']
+                        label: 'Temperature (Celsius)',
+                        data: [data.main.temp, data.main.feels_like],
+                        backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 159, 64, 0.2)'],
+                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 159, 64, 1)'],
+                        borderWidth: 1
                     }]
                 },
                 options: {
@@ -364,10 +533,40 @@
                     }
                 }
             });
+
+            humidityChartInstance = new Chart(humidityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Humidity', 'Pressure', 'Wind Speed'],
+                    datasets: [{
+                        label: 'Weather Parameters',
+                        data: [data.main.humidity, data.main.pressure, data.wind.speed],
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Value'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Humidity vs Pressure vs Wind Speed'
+                        }
+                    }
+                }
+            });
         }
-
-
     </script>
 </body>
-
 </html>
