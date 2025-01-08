@@ -454,8 +454,6 @@
             const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString();
             const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString();
             const aqi = data.aqi_status || 'N/A';
-
-
             document.getElementById('temp').innerText = data.main.temp + "°C";
             document.getElementById('feelsLike').innerText = data.main.feels_like + "°C";
             document.getElementById('humidity').innerText = data.main.humidity + "%";

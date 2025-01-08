@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm 
 from wtforms import SelectField,FloatField,SubmitField 
 from wtforms.validators import DataRequired 
-from wtforms.validators import DataRequired 
 
 
 class CarbonFootPrintForm(FlaskForm):

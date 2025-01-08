@@ -61,20 +61,27 @@
         <h1>Register</h1>
         <label for="username">Username:</label>
         <input type="text" name="username" id="username" ><br>
-    
+        {% if username_error %}
+            <span style="color: red;">{{ username_error }}</span><br>
+        {% endif %}<br>
         <label for="email">Email:</label>
         <input type="email" name="email" id="email" ><br>
-
+        {% if email_error %}
+            <span style="color: red;">{{ email_error }}</span><br>
+        {% endif %}<br>
         <label for="password">Password:</label>
         <input type="password" name="password" id="password" ><br>
-    
+        {% if password_error %}
+            <span style="color: red;">{{ password_error }}</span><br>
+        {% endif %}<br>
         <label for="city">City:</label>
         <input type="text" name="city" id="city"><br> 
-    
-        {% if error %}
-            <span style="color: red;">{{ error }}</span><br>
+        {% if city_error %}
+        <span style="color: red;">{{ city_error }}</span><br>
         {% endif %}<br>
-    
+        {% if already_exists_error %}
+            <span style="color: red;">{{ already_exists_error }}</span><br>
+        {% endif %}<br>
         <button type="submit">Sign Up</button><br>
         <p>Already have an account? <a href="/login">Login</a></p>
     </form>

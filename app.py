@@ -104,11 +104,14 @@ def index():
 def login():
     username_error = None
     password_error = None
+    invalid_credentials_error = None
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if not username or not password:
-            error = "Please enter all the fields"
+        if not username:
+            username_error = "Please enter username"
+        if not password:
+            password_error = "Please enter password"
         else:
             user = User.query.filter_by(username=username).first()
             if user and user.password == password:
@@ -116,32 +119,40 @@ def login():
                 session['is_admin'] = user.is_admin
                 return redirect(url_for('home'))
             else:
-                error = "Invalid username or password."
-        if error:
-            username_error = error  
-    return render_template('login.html', username_error=username_error)
+                invalid_credentials_error = "Invalid username or password."
+    return render_template('login.html', username_error=username_error,password_error=password_error,invalid_credentials_error=invalid_credentials_error)
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    error = None
+    username_error = None
+    email_error = None
+    password_error = None
+    city_error = None
+    already_exists_error = None
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
         city = request.form.get('city')
-        if not username or not email or not password or not city: 
-            error = "Please enter all fields."
-        if not error:
+        if not username: 
+            username_error = "Please enter username"
+        if not email:
+            email_error = "Please enter email"
+        if not password:
+            password_error = "Please enter password"
+        if not city:
+            city_error = "Please enter city"
+        if not username_error and not email_error and not password_error and not city_error:
             existing_user = User.query.filter_by(username=username).first()
             if existing_user:
-                error = "Username already taken."
+                already_exists_error = "Username already taken."
             else:
                 new_user = User(username=username, email=email, password=password, city=city)
                 db.session.add(new_user)
                 db.session.commit()
                 return redirect(url_for('login'))
-    return render_template('register.html', error=error)
+    return render_template('register.html', username_error=username_error,email_error=email_error,password_error=password_error,city_error=city_error,already_exists_error=already_exists_error)
 
 
 @app.route('/welcome')
